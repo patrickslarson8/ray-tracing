@@ -5,6 +5,8 @@
 #include "Walnut/Random.h"
 #include "Walnut/Timer.h"
 
+#include "Renderer.h"
+
 using namespace Walnut;
 
 class ExampleLayer : public Walnut::Layer
@@ -38,6 +40,9 @@ public:
 	{
 		Timer timer;
 
+		//Renderer resize
+		//renderer render
+
 		if (!m_Image || m_ViewportWidth != m_Image->GetWidth() || m_ViewportHeight != m_Image->GetHeight())
 		{
 			m_Image = std::make_shared<Walnut::Image>(m_ViewportWidth,
@@ -57,7 +62,7 @@ public:
 	}
 
 private:
-	std::shared_ptr<Image> m_Image;
+	Renderer m_renderer;
 	uint32_t* m_ImageData = nullptr;
 	uint32_t m_ViewportWidth = 0, m_ViewportHeight = 0;
 	float m_LastRenderTime = 0;
