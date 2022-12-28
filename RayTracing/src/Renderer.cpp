@@ -20,11 +20,26 @@ void Renderer::OnResize(uint32_t width, uint32_t height)
 
 void Renderer::Render()
 {
-	for (uint32_t i = 0; i < m_FinalImage->GetWidth() * m_FinalImage->GetHeight(); i++)
+	// render rows
+	for (uint32_t y = 0; y < m_FinalImage->GetHeight(); y++)
 	{
-		m_ImageData[i] = Walnut::Random::UInt();
-		m_ImageData[i] |= 0xff000000;
+		//render pixels
+		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
+		{
+			// Get pixel
+			glm::vec2 coord = { (float)x / m_FinalImage->GetWidth(),(float)y / m_FinalImage->GetHeight() };
+			// run shader
+			m_ImageData[x + y * m_FinalImage->GetWidth()] = PerPixel(coord);
+		}
 	}
 
 	m_FinalImage->SetData(m_ImageData);
+}
+
+uint32_t Renderer::PerPixel(glm::vec2 coord)
+{
+	uint8_t r = (uint8_t)(coord.x * 255.0f);
+	uint8_t g = (uint8_t)(coord.y * 255.0f);
+
+	return 0xff000000 | (g << 8) | r;
 }
