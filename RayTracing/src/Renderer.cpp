@@ -79,7 +79,16 @@ uint32_t Renderer::PerPixel(glm::vec2 coord)
 
 	// Use discrimanent to determine if ray hit sphere
 	if (discriminant >= 0.0f)
-		return 0xffff00ff;
+	{
+		// after hit, determine distance
+		float distance;
+		distance = (-b + sqrt((double)discriminant)) / (2 * a);
+		distance *= 50;
+		auto convert = (uint8_t)distance;
+		auto sphere_color = 0x0ff000000 | (convert << 8) | convert*2;
+		
+		return sphere_color;
+	}
 
 	// if miss, return background color
 	return 0xff000000 | (g << 8) | r;
