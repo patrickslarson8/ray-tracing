@@ -42,6 +42,7 @@ void Renderer::Render()
 
 uint32_t Renderer::PerPixel(glm::vec2 coord)
 {
+	// used to render background effect
 	uint8_t r = (uint8_t)(coord.x * 255.0f);
 	uint8_t g = (uint8_t)(coord.y * 255.0f);
 
@@ -52,7 +53,7 @@ uint32_t Renderer::PerPixel(glm::vec2 coord)
 	glm::vec3 rayDirection(coord.x, coord.y, -1.0f);
 	float radius = 0.5f;
 
-	rayDirection = glm::normalize(rayDirection);
+	//rayDirection = glm::normalize(rayDirection);
 
 	// to render a sphere using quadratic formula
 	// 
@@ -64,6 +65,8 @@ uint32_t Renderer::PerPixel(glm::vec2 coord)
 	// b = ray direction
 	// r = radius
 	// t = hit distance
+	// when solving for t become familiar quadratic equation
+	// -b +/- sqrt(b^2 - 4ac) / 2a
 
 
 	float a = glm::dot(rayDirection, rayDirection);
