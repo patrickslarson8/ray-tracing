@@ -57,31 +57,53 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 	Ray ray;
 	ray.Origin = m_ActiveCamera->GetPosition();
 	ray.Direction = m_ActiveCamera->GetRayDirections()[x + y * m_FinalImage->GetWidth()];
-	Renderer::HitPayload payload = TraceRay(ray);
 
-	// Opt out if miss
-	if (payload.HitDistance < 0)
-		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+	float multiplier = 1.0f;
+	glm::vec3 color(0.0f);
 
-	// Use payload to determine pixel color
-	// calculate light source direction for comparison
-	// with normal of surface
-	glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
+	// Run for every bounce of light
+	int bounces = 2;
+	for (int i = 0; i < bounces; i++)
+	{
+		Renderer::HitPayload payload = TraceRay(ray);
 
-	// use dot product to determine how closely normal and light
-	// source align. We invert light direction because normal and
-	// light dir are 180deg from each other
-	// clamp low end at 0 because anything greater than 90deg 
-	// should not be lit
-	float lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f);
+		// Opt out if miss
+		if (payload.HitDistance < 0)
+		{
+			glm::vec3 skyColor = glm::vec3(0.0f, 0.0f, 0.0f);
+			color += skyColor * multiplier;
+			break;
+		}
 
-	// Get sphere color (Make sure to only access if ray hit something)
-	const Sphere& sphere = m_ActiveScene->Spheres[payload.ObjectIndex];
-	glm::vec3 sphereColor = sphere.Albedo;
+		// Use payload to determine pixel color
+		// calculate light source direction for comparison
+		// with normal of surface
+		glm::vec3 lightDir = glm::normalize(glm::vec3(-1, -1, -1));
 
-	// Use information to adjust brigthness of pixel based on light
-	sphereColor *= lightIntensity;
-	return glm::vec4(sphereColor, 1.0f);
+		// use dot product to determine how closely normal and light
+		// source align. We invert light direction because normal and
+		// light dir are 180deg from each other
+		// clamp low end at 0 because anything greater than 90deg 
+		// should not be lit
+		float lightIntensity = glm::max(glm::dot(payload.WorldNormal, -lightDir), 0.0f);
+
+		// Get sphere color (Make sure to only access if ray hit something)
+		const Sphere& sphere = m_ActiveScene->Spheres[payload.ObjectIndex];
+		glm::vec3 sphereColor = sphere.Albedo;
+
+		// Use information to adjust brigthness of pixel based on light
+		sphereColor *= lightIntensity;
+		color += sphereColor * multiplier;
+
+		// emulate ray getting dimmer after each bounce
+		multiplier *= 0.7f;
+
+		// On bounce, update ray to where it bounced
+		// Add a bit of normal direction to prevent calculation from hitting original sphere
+		ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+		ray.Direction = glm::reflect(ray.Direction, payload.WorldNormal);
+	}
+	return glm::vec4(color, 1.0f);
 }
 
 Renderer::HitPayload Renderer::ClosestHit(const Ray& ray, float hitDistance, int objectIndex)
@@ -162,7 +184,8 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 		// We only care about the closest hit point for opaque spheres
 		//float furthestT = ( -b + glm::sqrt(discriminant)) / (2.0f * a);
 		float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
-		if (closestT < hitDistance)
+		// ignore objects behind camera (negative)
+		if (closestT > 0.0f && closestT < hitDistance)
 		{
 			hitDistance = closestT;
 			closestSphere = (int)i;
