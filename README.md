@@ -1,6 +1,17 @@
-# Walnut App Template
+# Desktop Ray Tracer
 
-This is a simple app template for [Walnut](https://github.com/TheCherno/Walnut) - unlike the example within the Walnut repository, this keeps Walnut as an external submodule and is much more sensible for actually building applications. See the [Walnut](https://github.com/TheCherno/Walnut) repository for more details.
+![](2022-12-29-12-41-14.png)
 
-## Getting Started
-Once you've cloned, you can customize the `premake5.lua` and `WalnutApp/premake5.lua` files to your liking (eg. change the name from "WalnutApp" to something else).  Once you're happy, run `scripts/Setup.bat` to generate Visual Studio 2022 solution/project files. Your app is located in the `WalnutApp/` directory, which some basic example code to get you going in `WalnutApp/src/WalnutApp.cpp`. I recommend modifying that WalnutApp project to create your own application, as everything should be setup and ready to go.
+Program to practice with desktop graphics and study 3d math. Currently renders spheres with a fixed lighting source. The spheres attributes are changeable in real-time and the camera can also move.
+
+### Getting Started
+
+1. To use, first download and install the Vulkan SDK: https://vulkan.lunarg.com/
+2. Clone the repo
+3. Run setup.bat located in Scripts
+4. Compile and run the program
+
+### To Do
+
+1. Move rendering from CPU to GPU
+2. Add ability to render objects other than spheres
