@@ -21,11 +21,31 @@ public:
 	std::shared_ptr<Walnut::Image> GetFinalImage() const { return m_FinalImage; }
 
 private:
+	struct HitPayload
+	{
+		float HitDistance;
+		glm::vec3 WorldNormal;
+		glm::vec3 WorldPosition;
+
+		int ObjectIndex;
+	};
+
 	//shader
-	glm::vec4 TraceRay(const Scene& scene, const Ray& ray);
+	// PerPixel generates rays in the case you want more
+	// than one ray per pixel
+	glm::vec4 PerPixel(uint32_t x, uint32_t y);
+
+	// Utilities that PerPixel uses to shade pixel based
+	// on ray trace result
+	HitPayload TraceRay(const Ray& ray);
+	HitPayload ClosestHit(const Ray& ray, float hitDistance, int objectIndex);
+	HitPayload Miss(const Ray& ray);
 
 	//properties
 	std::shared_ptr<Walnut::Image> m_FinalImage;
 	uint32_t* m_ImageData = nullptr;
+
+	const Scene* m_ActiveScene = nullptr;
+	const Camera* m_ActiveCamera = nullptr;
 
 };
