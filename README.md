@@ -1,6 +1,6 @@
 # Desktop Ray Tracer
 
-![](2022-12-29-12-41-14.png)
+![](2022-12-29-14-58-10.png)
 
 Program to practice with desktop graphics and study 3d math. Currently renders spheres with a fixed lighting source. The spheres attributes are changeable in real-time and the camera can also move.
 
