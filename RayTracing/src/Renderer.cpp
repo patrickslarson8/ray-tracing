@@ -58,7 +58,7 @@ void Renderer::Render()
 glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 {
 	// camera location
-	glm::vec3 rayOrigin(0.0f, 0.0f, 2.0f);
+	glm::vec3 rayOrigin(0.0f, 0.0f, 1.0f);
 
 	// camera looking direction
 	glm::vec3 rayDirection(coord.x, coord.y, -1.0f);
@@ -104,8 +104,23 @@ glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 	// convert t distances to x,y,z coordinates
 	//glm::vec3 hitPointFar = rayOrigin + rayDirection * furthestT;
 	glm::vec3 hitPoint = rayOrigin + rayDirection * closestT;
+	glm::vec3 normal = glm::normalize(hitPoint);
 
+
+	// calculate light source direction for comparison
+	// with normal of surface
+	glm::vec3 lightDir = glm::normalize(glm::vec3(-1,-1,-1));
+
+	// use dot product to determine how closely normal and light
+	// source align. We invert light direction because normal and
+	// light dir are 180deg from each other
+	// clamp low end at 0 because anything greater than 90deg 
+	// should not be lit
+	float d = glm::max(glm::dot(normal, -lightDir), 0.0f);
+
+
+	// Use information to adjust brigthness of sphere based on light
 	glm::vec3 sphereColor(1, 0, 1);
-	sphereColor = hitPoint;
+	sphereColor *= d;
 	return glm::vec4(sphereColor, 1.0f);
 }
