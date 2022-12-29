@@ -45,7 +45,7 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 		for (uint32_t x = 0; x < m_FinalImage->GetWidth(); x++)
 		{
 			// get specific ray direction for each pixel
-			ray.Direction = camera.GetRayDirections()[x+y*m_FinalImage->GetWidth()];
+			ray.Direction = camera.GetRayDirections()[x + y * m_FinalImage->GetWidth()];
 
 			// run shader
 			glm::vec4 color = TraceRay(scene, ray);
@@ -79,37 +79,53 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 	if (scene.Spheres.size() == 0)
 		return glm::vec4(0, 0, 0, 1);
 
+	// Track which sphere is closest
+	const Sphere* closestSphere = nullptr;
+	float hitDistance = std::numeric_limits<float>::max();
 
-	// get sphere to work with
-	const Sphere& sphere = scene.Spheres[0];
+	// loop through all spheres in scene
+	for (const Sphere& sphere : scene.Spheres)
+	{
+		// move camera to simulate moving object
+		glm::vec3 origin = ray.Origin - sphere.Position;
 
-	// move camera to simulate moving object
-	glm::vec3 origin = ray.Origin - sphere.Position;
+		float a = glm::dot(ray.Direction, ray.Direction);
+		float b = 2.0f * glm::dot(origin, ray.Direction);
+		float c = glm::dot(origin, origin) - sphere.Radius * sphere.Radius;
 
-	float a = glm::dot(ray.Direction, ray.Direction);
-	float b = 2.0f * glm::dot(origin, ray.Direction);
-	float c = glm::dot(origin, ray.Origin) - sphere.Radius * sphere.Radius;
+		// discriminant
+		// b^2 - 4ac
+		float discriminant = (b * b) - (4 * a * c);
 
-	// discriminant
-	// b^2 - 4ac
-	float discriminant = (b * b) - (4 * a * c);
+		// Use discrimanent to determine if ray miss sphere
+		// then use rest of formula
+		// (-b +- sqrt(discriminant)/2a
+		// if miss then continue and look for othere spheres in loop
+		if (discriminant < 0.0f)
+			continue;
 
-	// Use discrimanent to determine if ray miss sphere
-	// then use rest of formula
-	// (-b +- sqrt(discriminant)/2a
-	if (discriminant < 0.0f)
-		return glm::vec4(0,0,0,1);
+		// if hit, calculate distance that ray intersects sphere
+		// notice this ignore the tangent case so we have two intersections
+		// near and far sides
+		// We only care about the closest hit point for opaque spheres
+		//float furthestT = ( -b + glm::sqrt(discriminant)) / (2.0f * a);
+		float closestT = (-b - glm::sqrt(discriminant)) / (2.0f * a);
+		if (closestT < hitDistance)
+		{
+			hitDistance = closestT;
+			closestSphere = &sphere;
+		}
+	}
 
-	// if hit, calculate distance that ray intersects sphere
-	// notice this ignore the tangent case so we have two intersections
-	// near and far sides
-	// We only care about the closest hit point for opaque spheres
-	//float furthestT = ( -b + glm::sqrt(discriminant)) / (2.0f * a);
-	float closestT = ( -b - glm::sqrt(discriminant)) / (2.0f * a);
+	// Return background color if no sphere hit
+	if (closestSphere == nullptr)
+		return glm::vec4(0.0f, 0.0f, 0.0f, 1.0f);
+
 
 	// convert t distances to x,y,z coordinates
 	//glm::vec3 hitPointFar = rayOrigin + rayDirection * furthestT;
-	glm::vec3 hitPoint = origin + ray.Direction * closestT;
+	glm::vec3 origin = ray.Origin - closestSphere->Position;
+	glm::vec3 hitPoint = origin + ray.Direction * hitDistance;
 	glm::vec3 normal = glm::normalize(hitPoint);
 
 
@@ -126,7 +142,7 @@ glm::vec4 Renderer::TraceRay(const Scene& scene, const Ray& ray)
 
 
 	// Use information to adjust brigthness of sphere based on light
-	glm::vec3 sphereColor = sphere.Albedo;
+	glm::vec3 sphereColor = closestSphere->Albedo;
 	sphereColor *= lightIntensity;
 	return glm::vec4(sphereColor, 1.0f);
 }
