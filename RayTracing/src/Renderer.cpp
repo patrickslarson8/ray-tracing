@@ -88,10 +88,24 @@ glm::vec4 Renderer::PerPixel(glm::vec2 coord)
 	// b^2 - 4ac
 	float discriminant = (b * b) - (4 * a * c);
 
-	// Use discrimanent to determine if ray hit sphere
-	if (discriminant >= 0.0f)
-		return glm::vec4(1,0,0,1);
+	// Use discrimanent to determine if ray miss sphere
+	// then use rest of formula
+	// (-b +- sqrt(discriminant)/2a
+	if (discriminant < 0.0f)
+		return glm::vec4(0,0,0,1);
 
-	// if miss, return background color
-	return glm::vec4(0,0,0,1);
+	// if hit, calculate distance that ray intersects sphere
+	// notice this ignore the tangent case so we have two intersections
+	// near and far sides
+	// We only care about the closest hit point for opaque spheres
+	//float furthestT = ( -b + glm::sqrt(discriminant)) / (2.0f * a);
+	float closestT = ( -b - glm::sqrt(discriminant)) / (2.0f * a);
+
+	// convert t distances to x,y,z coordinates
+	//glm::vec3 hitPointFar = rayOrigin + rayDirection * furthestT;
+	glm::vec3 hitPoint = rayOrigin + rayDirection * closestT;
+
+	glm::vec3 sphereColor(1, 0, 1);
+	sphereColor = hitPoint;
+	return glm::vec4(sphereColor, 1.0f);
 }
