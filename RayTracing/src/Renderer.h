@@ -18,7 +18,7 @@ public:
 
 private:
 	//shader
-	uint32_t PerPixel(glm::vec2 coord);
+	glm::vec4 PerPixel(glm::vec2 coord);
 
 	//properties
 	std::shared_ptr<Walnut::Image> m_FinalImage;
