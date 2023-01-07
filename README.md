@@ -21,8 +21,6 @@ By pre-calculating the random vectors on initialization, render time is decrease
 
 ### To Do
 
-1. Improve performance
-   1. Change random to predictive directions for roughness calculation
-   2. Change multi-threading scheme to use groups aware of how many cores CPU has
-2. Move rendering from CPU to GPU
-3. Add ability to render objects other than spheres
+
+1. Move rendering from CPU to GPU
+2. Add ability to render objects other than spheres
