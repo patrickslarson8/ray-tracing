@@ -13,7 +13,11 @@ Program to practice with desktop graphics and study 3d math. Currently renders s
 
 ### Performance
 
-Current render time single-threaded is about 60ms on an i7-12700k. Comes down to about half with C++ built in multi-threading. This spawns way too many threads and performance in lost in overhead. Additionally, significant time is spent coming up with randoms for the scene accumulation.
+Current render time with built-in multithreading (for loop) on my computer is 48-50ms per frame. This spawns way too many threads and performance in lost in overhead. Additionally, significant time is spent coming up with randoms for the scene accumulation (see screen shot below)
+
+![](2023-01-07-11-24-14.png)
+
+By pre-calculating the random vectors on initialization, render time is decreased to 7-8ms per frame;
 
 ### To Do
 

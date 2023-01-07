@@ -16,9 +16,18 @@ public:
 	{
 		bool Accumulate = true;
 	};
+
+	class PsuedoRandGenerator
+	{
+	private:
+		int32_t m_RandNumSlices = 6;
+	public:
+		glm::vec3 GetPsuedoRandomDir(float max, uint32_t frameIndex);
+	};
 public:
 	// Ctor
-	Renderer() = default;
+	//Renderer() = default;
+	Renderer();
 
 	// Render functions
 	void OnResize(uint32_t width, uint32_t height);
@@ -50,6 +59,8 @@ private:
 	HitPayload TraceRay(const Ray& ray);
 	HitPayload ClosestHit(const Ray& ray, float hitDistance, int objectIndex);
 	HitPayload Miss(const Ray& ray);
+	void UpdateRandoms();
+	glm::vec3 GetRandDir();
 
 	//properties
 	std::shared_ptr<Walnut::Image> m_FinalImage;
@@ -64,4 +75,6 @@ private:
 	Settings m_Settings;
 
 	std::vector<uint32_t> m_ImageHorizontalIterator, m_ImageVerticalIterator;
+
+	std::vector<glm::vec3> m_RandomsPool;
 };
