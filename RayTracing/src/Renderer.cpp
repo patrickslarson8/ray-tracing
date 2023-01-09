@@ -1,5 +1,5 @@
 #include "Renderer.h"
-
+#include <thread>
 #include <execution>
 
 namespace Utils {
@@ -15,24 +15,11 @@ namespace Utils {
 	}
 }
 
-Renderer::Renderer()
+Renderer::Renderer(int i)
 {
-	m_RandomsPool = std::vector<glm::vec3>(100, glm::vec3(0.0f));
-	Renderer::UpdateRandoms();
-}
-
-void Renderer::UpdateRandoms()
-{
-	for (uint32_t i = 0; i < 100; i++)
-	{
-		m_RandomsPool[i] = Walnut::Random::Vec3(-0.5f, 0.5f);
-	}
-}
-
-glm::vec3 Renderer::GetRandDir()
-{
-	uint32_t index = m_FrameIndex % 100;
-	return m_RandomsPool[index];
+	m_RandProv = RandomProvider();
+	std::thread t{ &RandomProvider::UpdatePsuedoRandomDir, &m_RandProv };
+	t.detach();
 }
 
 void Renderer::OnResize(uint32_t width, uint32_t height)
@@ -70,7 +57,7 @@ void Renderer::Render(const Scene& scene, const Camera& camera)
 	if (m_FrameIndex == 1)
 		memset(m_AccumulationData, 0, m_FinalImage->GetWidth() * m_FinalImage->GetHeight() * sizeof(glm::vec4));
 
-#define MT 1
+#define MT 0
 #if MT
 	// concurrent loop to add multi-threading
 	std::for_each(std::execution::par, m_ImageVerticalIterator.begin(), m_ImageVerticalIterator.end(),
@@ -180,19 +167,14 @@ glm::vec4 Renderer::PerPixel(uint32_t x, uint32_t y)
 		// Add a bit of normal direction to prevent calculation from hitting original sphere
 		// Add roughness by offsetting reflection direction
 		ray.Origin = payload.WorldPosition + payload.WorldNormal * 0.0001f;
+
+		// cherno code
 		//ray.Direction = glm::reflect(ray.Direction,
 		//	payload.WorldNormal + material.Roughness * Walnut::Random::Vec3(-0.5f, 0.5f));
-		//glm::vec3 compareRand = Walnut::Random::Vec3(-0.5f, 0.5f);
-		//auto chernoValue = material.Roughness * compareRand;
-		//float roughness = material.Roughness * 0.5;
 
-		//PsuedoRandGenerator gen;
-		//glm::vec3 ranDir = gen.GetPsuedoRandomDir(roughness, (float)m_FrameIndex);
-		//ray.Direction = glm::reflect(ray.Direction,
-		//	payload.WorldNormal + ranDir);
-
+		//my code
 		ray.Direction = glm::reflect(ray.Direction,
-			payload.WorldNormal + material.Roughness * GetRandDir());
+			payload.WorldNormal + material.Roughness * m_RandProv.GetPsuedoRandomDir());
 	}
 	return glm::vec4(color, 1.0f);
 }
@@ -291,39 +273,3 @@ Renderer::HitPayload Renderer::TraceRay(const Ray& ray)
 	return ClosestHit(ray, hitDistance, closestSphere);
 }
 
-glm::vec3 Renderer::PsuedoRandGenerator::GetPsuedoRandomDir(float max, uint32_t frameIndex)
-{
-	// Generates noise to simulate roughness when ray tracing
-	// however actual random is not required so instead uses
-	// the roughness value to redirect the ray, and uses the frame count
-	// to slowly work towards a zero value (no roughness in ray)
-	float roughnessValue;
-	float sliceSize = max / (float)m_RandNumSlices;
-	float sliceToRender = (m_RandNumSlices % frameIndex);
-	float sliceOffset = (m_RandNumSlices / 2);
-	float finalSlice = sliceToRender - sliceOffset;
-	//roughnessValue = sliceSize * ((m_RandNumSlices % frameIndex) - (m_RandNumSlices/2));
-	roughnessValue = sliceSize * finalSlice;
-
-
-	uint32_t randomDirection = frameIndex % 8;
-	switch (randomDirection)
-	{
-	case 1: 
-		return glm::vec3(roughnessValue, 0.0f, 0.0f);
-	case 2: 
-		return glm::vec3(0.0f, roughnessValue, 0.0f);
-	case 3: 
-		return glm::vec3(0.0f, 0.0f, roughnessValue);
-	case 4: 
-		return glm::vec3(roughnessValue, roughnessValue, 0.0f);
-	case 5: 
-		return glm::vec3(roughnessValue, 0.0f, roughnessValue);
-	case 6: 
-		return glm::vec3(0.0f, roughnessValue, roughnessValue);
-	case 7: 
-		return glm::vec3(roughnessValue, roughnessValue, roughnessValue);
-	case 8:
-		return glm::vec3(0.0f);
-	}
-}

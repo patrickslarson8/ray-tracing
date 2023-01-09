@@ -26,3 +26,10 @@ By pre-calculating the random vectors on initialization, render time is decrease
    2. Change multi-threading scheme to use groups aware of how many cores CPU has
 2. Move rendering from CPU to GPU
 3. Add ability to render objects other than spheres
+
+### Branch specific to-do
+
+1. Make random generation widely thread safe
+   1. Currently when using the concurrent for-loop, too many instances of the PerPixel() function call the incrementTracker() function in the randomProvider class. This causes the tracker to go outside of the range of the vector and crashes.
+   2. Ideas: add thread blocking or only have the updating thread call the incrementer
+      1. will cause many PerPixel instances to get the same random and could impact image quality short-term until new randoms are used and accumulated
