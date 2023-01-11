@@ -17,7 +17,7 @@ Current render time with built-in multithreading (for loop) on my computer is 48
 
 ![](2023-01-07-11-24-14.png)
 
-By pre-calculating the random vectors on initialization, render time is decreased to 7-8ms per frame;
+By pre-calculating the random vectors on initialization, render time is decreased to 7-8ms per frame. Currently this is done with a predictive random scheme. Randoms are stored in the RandomProvider class with one thread committed to re-caluculating the randoms. Randoms are then retrieved as needed and updated at a much slower rate than generating a new random each frame. This has the side effect of causing weird artifacts when resetting the frame accumulator, as many shaders are receiving the same random value for roughness offset.
 
 ### To Do
 
@@ -26,10 +26,3 @@ By pre-calculating the random vectors on initialization, render time is decrease
    2. Change multi-threading scheme to use groups aware of how many cores CPU has
 2. Move rendering from CPU to GPU
 3. Add ability to render objects other than spheres
-
-### Branch specific to-do
-
-1. Make random generation widely thread safe
-   1. Currently when using the concurrent for-loop, too many instances of the PerPixel() function call the incrementTracker() function in the randomProvider class. This causes the tracker to go outside of the range of the vector and crashes.
-   2. Ideas: add thread blocking or only have the updating thread call the incrementer
-      1. will cause many PerPixel instances to get the same random and could impact image quality short-term until new randoms are used and accumulated
