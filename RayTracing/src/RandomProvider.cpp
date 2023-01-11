@@ -36,15 +36,11 @@ void RandomProvider::UpdatePsuedoRandomDir()
 	{
 		RandomProvider::IncrementRandomLock();
 		m_RandomsPool[m_RandomLock] = Walnut::Random::Vec3(-0.5f, 0.5f);
+		RandomProvider::IncrementRandomTracker();
 	}
 }
 
 glm::vec3 RandomProvider::GetPsuedoRandomDir()
 {
-	RandomProvider::IncrementRandomTracker();
-	if (m_RandomTracker == m_RandomLock)
-	{
-		RandomProvider::IncrementRandomTracker();
-	}
 	return m_RandomsPool[m_RandomTracker];
 }
