@@ -136,7 +136,7 @@ public:
 	}
 
 private:
-	Renderer m_Renderer;
+	Renderer m_Renderer = Renderer(1);
 	Camera m_Camera;
 	Scene m_Scene;
 	uint32_t* m_ImageData = nullptr;
